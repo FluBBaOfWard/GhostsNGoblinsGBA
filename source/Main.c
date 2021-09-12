@@ -2,14 +2,13 @@
 
 #include "Main.h"
 #include "Shared/EmuMenu.h"
+#include "Shared/AsmExtra.h"
 #include "GUI.h"
 #include "EmuFont.h"
 #include "Cart.h"
 #include "cpu.h"
 #include "Gfx.h"
 #include "io.h"
-#include "Sound.h"
-#include "Shared/AsmExtra.h"
 
 static void checkTimeOut(void);
 static void setupGraphics(void);

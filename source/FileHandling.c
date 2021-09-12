@@ -8,6 +8,7 @@
 
 #include "FileHandling.h"
 #include "Shared/EmuMenu.h"
+#include "Shared/EmuSettings.h"
 #include "Emubase.h"
 #include "Main.h"
 #include "GUI.h"
@@ -21,6 +22,8 @@ static const char *const settingName = "settings.cfg";
 
 configdata cfg;
 static int selectedGame = 0;
+
+static bool loadRoms(int gameNr, bool doLoad);
 
 #define GAMECOUNT (3)
 static const int gameCount = GAMECOUNT;
@@ -61,12 +64,12 @@ int loadSettings() {
 	g_dipSwitch0 = cfg.dipSwitch0;
 	g_dipSwitch1 = cfg.dipSwitch1;
 	g_dipSwitch2 = cfg.dipSwitch2;
-	g_scaling    = cfg.scaling&1;
-	g_flicker    = cfg.flicker&1;
+	g_scaling    = cfg.scaling & 1;
+	g_flicker    = cfg.flicker & 1;
 	g_gammaValue = cfg.gammaValue;
-	emuSettings  = cfg.emuSettings &~ 0xC0;			// Clear speed setting.
+	emuSettings  = cfg.emuSettings & ~EMUSPEED_MASK; // Clear speed setting.
 	sleepTime    = cfg.sleepTime;
-	joyCfg       = (joyCfg&~0x400)|((cfg.controller&1)<<10);
+	joyCfg       = (joyCfg & ~0x400)|((cfg.controller&1)<<10);
 //	strlcpy(currentDir, cfg.currentPath, sizeof(currentDir));
 
 	infoOutput("Settings loaded.");
@@ -79,10 +82,10 @@ void saveSettings() {
 	cfg.dipSwitch0  = g_dipSwitch0;
 	cfg.dipSwitch1  = g_dipSwitch1;
 	cfg.dipSwitch2  = g_dipSwitch2;
-	cfg.scaling     = g_scaling&1;
-	cfg.flicker     = g_flicker&1;
+	cfg.scaling     = g_scaling & 1;
+	cfg.flicker     = g_flicker & 1;
 	cfg.gammaValue  = g_gammaValue;
-	cfg.emuSettings = emuSettings &~ 0xC0;			// Clear speed setting.
+	cfg.emuSettings = emuSettings & ~EMUSPEED_MASK; // Clear speed setting.
 	cfg.sleepTime   = sleepTime;
 	cfg.controller  = (joyCfg>>10)&1;
 //	strlcpy(cfg.currentPath, currentDir, sizeof(currentDir));

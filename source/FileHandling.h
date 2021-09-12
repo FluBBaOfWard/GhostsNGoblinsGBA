@@ -14,7 +14,6 @@ void saveNVRAM(void);
 void loadState(void);
 void saveState(void);
 bool loadGame(void);
-bool loadRoms(int gameNr, bool doLoad);
 
 #ifdef __cplusplus
 } // extern "C"

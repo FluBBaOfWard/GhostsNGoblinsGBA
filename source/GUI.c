@@ -11,7 +11,7 @@
 #include "ARM6809/Version.h"
 #include "GnGVideo/Version.h"
 
-#define EMUVERSION "V0.1.0 2021-03-22"
+#define EMUVERSION "V0.1.0 2021-09-12"
 
 const fptr fnMain[] = {nullUI, subUI, subUI, subUI, subUI, subUI, subUI, subUI, subUI};
 
