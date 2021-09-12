@@ -1,0 +1,6 @@
+build
+GhostsNGoblinsGBA.xcodeproj/project.xcworkspace/xcuserdata
+*.elf
+*.gba
+*.sav
+include/gng

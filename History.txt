@@ -1,0 +1,13 @@
+GhostsNGoblinsGBA revision history
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+
+
+V0.1.0 - 2021-03-17 (FluBBa)
+	Added savestates.
+
+V0.0.1 - 2021-02-24 (FluBBa)
+	Ghosts'n Goblins playable.
+
+V0.0.0 - 2021-02-13 (FluBBa)
+   Started porting from NDS.
+
