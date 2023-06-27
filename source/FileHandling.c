@@ -11,7 +11,7 @@
 #include "Shared/EmuSettings.h"
 #include "Emubase.h"
 #include "Main.h"
-#include "GUI.h"
+#include "Gui.h"
 #include "GhostsNGoblins.h"
 #include "Cart.h"
 #include "Gfx.h"

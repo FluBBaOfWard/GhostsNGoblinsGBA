@@ -6,8 +6,9 @@
 
 #define CYCLE_PSL (96)
 
-	.global cpuReset
 	.global run
+	.global stepFrame
+	.global cpuReset
 	.global frameTotal
 	.global waitMaskIn
 	.global waitMaskOut
@@ -19,7 +20,7 @@
 	.section .ewram,"ax"
 	.align 2
 ;@----------------------------------------------------------------------------
-run:		;@ Return after 1 frame
+run:					;@ Return after 1 frame
 	.type   run STT_FUNC
 ;@----------------------------------------------------------------------------
 	ldrh r0,waitCountIn
@@ -57,11 +58,12 @@ runStart:
 ;@----------------------------------------------------------------------------
 gngFrameLoop:
 ;@----------------------------------------------------------------------------
+	mov r0,#CYCLE_PSL
+	bl m6809RunXCycles
 	ldr gngptr,=gngVideo_0
 	bl doScanline
 	cmp r0,#0
-	movne r0,#CYCLE_PSL
-	bne m6809RunXCycles
+	bne gngFrameLoop
 	b gngEnd
 ;@----------------------------------------------------------------------------
 
@@ -89,12 +91,49 @@ gngEnd:
 
 ;@----------------------------------------------------------------------------
 cyclesPerScanline:	.long 0
-frameTotal:			.long 0		;@ Let ui.c see frame count for savestates
+frameTotal:			.long 0		;@ Let Gui.c see frame count for savestates
 waitCountIn:		.byte 0
 waitMaskIn:			.byte 0
 waitCountOut:		.byte 0
 waitMaskOut:		.byte 0
 
+;@----------------------------------------------------------------------------
+stepFrame:					;@ Return after 1 frame
+	.type   stepFrame STT_FUNC
+;@----------------------------------------------------------------------------
+	stmfd sp!,{r4-r11,lr}
+
+	ldr m6809optbl,=m6809OpTable
+	add r0,m6809optbl,#m6809Regs
+	ldmia r0,{m6809f-m6809pc,m6809sp}	;@ Restore M6809 state
+;@----------------------------------------------------------------------------
+gngStepLoop:
+;@----------------------------------------------------------------------------
+	mov r0,#CYCLE_PSL
+	bl m6809RunXCycles
+	ldr gngptr,=gngVideo_0
+	bl doScanline
+	cmp r0,#0
+	bne gngStepLoop
+;@----------------------------------------------------------------------------
+	add r0,m6809optbl,#m6809Regs
+	stmia r0,{m6809f-m6809pc,m6809sp}	;@ Save M6809 state
+
+	ldr r1,frameTotal
+	add r1,r1,#1
+	str r1,frameTotal
+
+	ldmfd sp!,{r4-r11,lr}
+	bx lr
+
+;@----------------------------------------------------------------------------
+jrHack:			;@ JR -3 (0x18 0xFD), Z80 speed hack.
+;@----------------------------------------------------------------------------
+//	ldrsb r0,[z80pc],#1
+	cmp r0,#-3
+	andeq cycles,cycles,#CYC_MASK
+//	add z80pc,z80pc,r0
+	fetch 12
 ;@----------------------------------------------------------------------------
 braHack:		;@ BRA -9 (0x20 0xF7), speed hack.
 ;@----------------------------------------------------------------------------
@@ -118,11 +157,7 @@ cpuReset:		;@ Called by loadCart/resetGame
 	adr r4,cpuMapData
 	bl map6809Memory
 
-	ldr r0,=gngFrameLoop
-	str r0,[m6809optbl,#m6809NextTimeout]
-	str r0,[m6809optbl,#m6809NextTimeout_]
-
-	mov r0,#0
+	mov r0,m6809optbl
 	bl m6809Reset
 
 	adr r0,braHack

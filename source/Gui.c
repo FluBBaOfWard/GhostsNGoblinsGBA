@@ -1,6 +1,6 @@
 #include <gba.h>
 
-#include "GUI.h"
+#include "Gui.h"
 #include "Shared/EmuMenu.h"
 #include "Shared/EmuSettings.h"
 #include "Main.h"
@@ -8,36 +8,39 @@
 #include "Cart.h"
 #include "Gfx.h"
 #include "io.h"
+#include "cpu.h"
 #include "ARM6809/Version.h"
 #include "GnGVideo/Version.h"
 
-#define EMUVERSION "V0.1.0 2022-03-16"
+#define EMUVERSION "V0.2.0 2023-06-27"
 
-const fptr fnMain[] = {nullUI, subUI, subUI, subUI, subUI, subUI, subUI, subUI, subUI};
+static void uiDebug(void);
+
+const fptr fnMain[] = {nullUI, subUI, subUI, subUI, subUI, subUI, subUI, subUI, subUI, subUI};
 
 const fptr fnList0[] = {uiDummy};
-const fptr fnList1[] = {ui2, ui3, ui4, ui5, ui6, ui7, gbaSleep, resetGame};
-const fptr fnList2[] = {ui8, loadState, saveState, saveSettings, resetGame};
+const fptr fnList1[] = {ui2, ui3, ui4, ui5, ui6, ui7, ui8, gbaSleep, resetGame};
+const fptr fnList2[] = {ui9, loadState, saveState, saveSettings, resetGame};
 const fptr fnList3[] = {autoBSet, autoASet, controllerSet, swapABSet};
 const fptr fnList4[] = {scalingSet, flickSet, gammaSet, fgrLayerSet, bgrLayerSet, sprLayerSet};
-const fptr fnList5[] = {speedSet, autoStateSet, autoSettingsSet, autoPauseGameSet, debugTextSet, sleepSet};
-const fptr fnList6[] = {coinageSet, coinAffectSet, difficultSet, livesSet, bonusSet, cabinetSet, demoSet, flipSet, cheatSet};
-const fptr fnList7[] = {uiDummy};
-const fptr fnList8[] = {quickSelectGame, quickSelectGame, quickSelectGame, quickSelectGame, quickSelectGame, quickSelectGame, quickSelectGame, quickSelectGame, quickSelectGame, quickSelectGame};
-const fptr *const fnListX[] = {fnList0, fnList1, fnList2, fnList3, fnList4, fnList5, fnList6, fnList7, fnList8};
-const u8 menuXitems[] = {ARRSIZE(fnList0), ARRSIZE(fnList1), ARRSIZE(fnList2), ARRSIZE(fnList3), ARRSIZE(fnList4), ARRSIZE(fnList5), ARRSIZE(fnList6), ARRSIZE(fnList7), ARRSIZE(fnList8)};
-const fptr drawuiX[] = {uiNullNormal, uiMainMenu, uiFile, uiController, uiDisplay, uiSettings, uiDipswitches, uiAbout, uiLoadGame};
-const u8 menuXback[] = {0,0,1,1,1,1,1,1,2};
+const fptr fnList5[] = {speedSet, autoStateSet, autoSettingsSet, autoPauseGameSet, ewramSet, sleepSet};
+const fptr fnList6[] = {debugTextSet, fgrLayerSet, bgrLayerSet, sprLayerSet, stepFrame};
+const fptr fnList7[] = {coinageSet, coinAffectSet, difficultSet, livesSet, bonusSet, cabinetSet, demoSet, flipSet, cheatSet};
+const fptr fnList8[] = {uiDummy};
+const fptr fnList9[] = {quickSelectGame, quickSelectGame, quickSelectGame, quickSelectGame, quickSelectGame, quickSelectGame, quickSelectGame, quickSelectGame, quickSelectGame, quickSelectGame};
+const fptr *const fnListX[] = {fnList0, fnList1, fnList2, fnList3, fnList4, fnList5, fnList6, fnList7, fnList8, fnList9};
+const u8 menuXItems[] = {ARRSIZE(fnList0), ARRSIZE(fnList1), ARRSIZE(fnList2), ARRSIZE(fnList3), ARRSIZE(fnList4), ARRSIZE(fnList5), ARRSIZE(fnList6), ARRSIZE(fnList7), ARRSIZE(fnList8), ARRSIZE(fnList9)};
+const fptr drawUIX[] = {uiNullNormal, uiMainMenu, uiFile, uiController, uiDisplay, uiSettings, uiDebug, uiDipswitches, uiAbout, uiLoadGame};
 
 u8 gGammaValue;
 
-char *const autoTxt[]   = {"Off","On","With R"};
-char *const speedTxt[]  = {"Normal","200%","Max","50%"};
-char *const sleepTxt[]  = {"5min","10min","30min","Off"};
-char *const brighTxt[]  = {"I","II","III","IIII","IIIII"};
-char *const ctrlTxt[]   = {"1P","2P"};
-char *const dispTxt[]   = {"Unscaled","Scaled"};
-char *const flickTxt[]  = {"No Flicker","Flicker"};
+char *const autoTxt[]   = {"Off", "On", "With R"};
+char *const speedTxt[]  = {"Normal", "200%", "Max", "50%"};
+char *const sleepTxt[]  = {"5min", "10min", "30min", "Off"};
+char *const brighTxt[]  = {"I", "II", "III", "IIII", "IIIII"};
+char *const ctrlTxt[]   = {"1P", "2P"};
+char *const dispTxt[]   = {"Unscaled", "Scaled"};
+char *const flickTxt[]  = {"No Flicker", "Flicker"};
 
 char *const coinTxt[]	= {
 	"1 Coin - 1 Credit",  "1 Coin - 2 Credits", "1 Coin - 3 Credits", "1 Coin - 4 Credits",
@@ -45,12 +48,12 @@ char *const coinTxt[]	= {
 	"2 Coins - 3 Credits","2 Coins - 5 Credits","3 Coins - 1 Credit", "3 Coins - 2 Credits",
 	"3 Coins - 4 Credits","4 Coins - 1 Credit", "4 Coins - 3 Credits","Free Play"
 };
-char *const coinAffectTxt[] = {"Coin A","Coin B"};
-char *const diffTxt[]	= {"Easy","Normal","Difficult","Very Difficult"};
-char *const livesTxt[]	= {"3","4","5","7"};
-char *const bonusTxt[]	= {"20K 70K 70K+","30K 80K 80K+","20K 80K","30K 80K"};
-char *const cabTxt[]	= {"Upright","Cocktail"};
-char *const singleTxt[]	= {"Single","Dual"};
+char *const coinAffectTxt[] = {"Coin A", "Coin B"};
+char *const diffTxt[]	= {"Easy", "Normal", "Difficult", "Very Difficult"};
+char *const livesTxt[]	= {"3", "4", "5", "7"};
+char *const bonusTxt[]	= {"20K 70K 70K+", "30K 80K 80K+", "20K 80K","30K 80K"};
+char *const cabTxt[]	= {"Upright", "Cocktail"};
+char *const singleTxt[]	= {"Single", "Dual"};
 
 
 /// This is called at the start of the emulator
@@ -95,6 +98,7 @@ void uiMainMenu() {
 	drawMenuItem("Controller->");
 	drawMenuItem("Display->");
 	drawMenuItem("Settings->");
+	drawMenuItem("Debug->");
 	drawMenuItem("DipSwitches->");
 	drawMenuItem("Help->");
 	drawMenuItem("Sleep");
@@ -130,9 +134,6 @@ void uiDisplay() {
 	drawSubItem("Display: ", dispTxt[gScaling]);
 	drawSubItem("Scaling: ", flickTxt[gFlicker]);
 	drawSubItem("Gamma: ", brighTxt[gGammaValue]);
-	drawSubItem("Disable Foreground: ", autoTxt[gGfxMask&1]);
-	drawSubItem("Disable Background: ", autoTxt[(gGfxMask>>1)&1]);
-	drawSubItem("Disable Sprites: ", autoTxt[(gGfxMask>>4)&1]);
 }
 
 void uiSettings() {
@@ -141,8 +142,17 @@ void uiSettings() {
 	drawSubItem("Autoload State: ", autoTxt[(emuSettings>>2)&1]);
 	drawSubItem("Autosave Settings: ", autoTxt[(emuSettings>>9)&1]);
 	drawSubItem("Autopause Game: ", autoTxt[emuSettings&1]);
-	drawSubItem("Debug Output: ", autoTxt[g_debugSet&1]);
+	drawSubItem("EWRAM Overclock: ", autoTxt[ewram&1]);
 	drawSubItem("Autosleep: ", sleepTxt[(emuSettings>>4)&3]);
+}
+
+void uiDebug() {
+	setupSubMenu("Debug");
+	drawSubItem("Debug Output:", autoTxt[gDebugSet&1]);
+	drawSubItem("Disable Foreground:", autoTxt[gGfxMask&1]);
+	drawSubItem("Disable Background:", autoTxt[(gGfxMask>>1)&1]);
+	drawSubItem("Disable Sprites:", autoTxt[(gGfxMask>>4)&1]);
+	drawSubItem("Step Frame", NULL);
 }
 
 void uiDipswitches() {
