@@ -8,16 +8,22 @@
 
 	.global run
 	.global stepFrame
+	.global cpuInit
 	.global cpuReset
 	.global frameTotal
 	.global waitMaskIn
 	.global waitMaskOut
 
+	.global m6809CPU0
 
 	.syntax unified
 	.arm
 
-	.section .ewram,"ax"
+#ifdef GBA
+	.section .ewram, "ax", %progbits	;@ For the GBA
+#else
+	.section .text						;@ For anything else
+#endif
 	.align 2
 ;@----------------------------------------------------------------------------
 run:					;@ Return after 1 frame
@@ -49,8 +55,8 @@ runStart:
 
 	bl refreshEMUjoypads		;@ Z=1 if communication ok
 
-	ldr m6809optbl,=m6809OpTable
-	add r0,m6809optbl,#m6809Regs
+	ldr m6809ptr,=m6809CPU0
+	add r0,m6809ptr,#m6809Regs
 	ldmia r0,{m6809f-m6809pc,m6809sp}	;@ Restore M6809 state
 	b gngFrameLoop
 
@@ -69,7 +75,7 @@ gngFrameLoop:
 
 	.section .ewram,"ax"
 gngEnd:
-	add r0,m6809optbl,#m6809Regs
+	add r0,m6809ptr,#m6809Regs
 	stmia r0,{m6809f-m6809pc,m6809sp}	;@ Save M6809 state
 
 	ldr r1,=fpsValue
@@ -103,8 +109,8 @@ stepFrame:					;@ Return after 1 frame
 ;@----------------------------------------------------------------------------
 	stmfd sp!,{r4-r11,lr}
 
-	ldr m6809optbl,=m6809OpTable
-	add r0,m6809optbl,#m6809Regs
+	ldr m6809ptr,=m6809CPU0
+	add r0,m6809ptr,#m6809Regs
 	ldmia r0,{m6809f-m6809pc,m6809sp}	;@ Restore M6809 state
 ;@----------------------------------------------------------------------------
 gngStepLoop:
@@ -116,7 +122,7 @@ gngStepLoop:
 	cmp r0,#0
 	bne gngStepLoop
 ;@----------------------------------------------------------------------------
-	add r0,m6809optbl,#m6809Regs
+	add r0,m6809ptr,#m6809Regs
 	stmia r0,{m6809f-m6809pc,m6809sp}	;@ Save M6809 state
 
 	ldr r1,frameTotal
@@ -143,6 +149,11 @@ braHack:		;@ BRA -9 (0x20 0xF7), speed hack.
 	andeq cycles,cycles,#CYC_MASK
 	fetch 3
 ;@----------------------------------------------------------------------------
+cpuInit:			;@ Called by machineInit
+;@----------------------------------------------------------------------------
+	ldr r0,=m6809CPU0
+	b m6809Init
+;@----------------------------------------------------------------------------
 cpuReset:		;@ Called by loadCart/resetGame
 ;@----------------------------------------------------------------------------
 	stmfd sp!,{lr}
@@ -152,16 +163,18 @@ cpuReset:		;@ Called by loadCart/resetGame
 	str r0,cyclesPerScanline
 
 ;@--------------------------------------
-	ldr m6809optbl,=m6809OpTable
+	ldr m6809ptr,=m6809CPU0
 
 	adr r4,cpuMapData
 	bl map6809Memory
 
-	mov r0,m6809optbl
+	mov r0,m6809ptr
 	bl m6809Reset
 
-	adr r0,braHack
-	str r0,[m6809optbl,#0x20*4]
+	mov r0,m6809ptr
+	adr r2,braHack
+	mov r1,#0x20
+	bl m6809PatchOpcode
 
 	ldmfd sp!,{lr}
 	bx lr
@@ -193,6 +206,16 @@ m6809DataLoop:
 	movs r5,r5,lsr#1
 	bne m6809DataLoop
 	ldmfd sp!,{pc}
+;@----------------------------------------------------------------------------
+#ifdef NDS
+	.section .dtcm, "ax", %progbits		;@ For the NDS
+#elif GBA
+	.section .iwram, "ax", %progbits	;@ For the GBA
+#endif
+	.align 2
+;@----------------------------------------------------------------------------
+m6809CPU0:
+	.space m6809Size
 ;@----------------------------------------------------------------------------
 	.end
 #endif // #ifdef __arm__
