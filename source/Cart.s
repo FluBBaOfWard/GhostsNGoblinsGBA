@@ -5,10 +5,6 @@
 #include "ARM6809/ARM6809.i"
 #include "GnGVideo/GnGVideo.i"
 
-	.global machineInit
-	.global loadCart
-	.global m6809Mapper
-	.global m6809Mapper0
 	.global romNum
 	.global emuFlags
 //	.global scaling
@@ -18,11 +14,14 @@
 	.global vromBase1
 	.global vromBase2
 	.global adpcmBase
-
 	.global EMU_RAM
 	.global ROM_Space
 	.global testState
 
+	.global machineInit
+	.global loadCart
+	.global m6809Mapper
+	.global m6809Mapper0
 
 
 	.syntax unified

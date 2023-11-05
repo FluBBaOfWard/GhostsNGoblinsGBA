@@ -5,6 +5,8 @@
 
 #define MIX_LEN (528)
 
+	.extern pauseEmulation
+
 	.global soundInit
 	.global soundReset
 	.global vblSound1
@@ -14,10 +16,6 @@
 	.global SN_0_W
 	.global resetSoundCpu
 
-	.extern pauseEmulation
-
-
-;@----------------------------------------------------------------------------
 
 	.syntax unified
 	.arm

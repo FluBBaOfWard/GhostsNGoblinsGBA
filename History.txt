@@ -2,7 +2,7 @@ GhostsNGoblinsGBA revision history
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
 
-V0.2.0 - 2023-06-27 (FluBBa)
+V0.2.0 - 2023-11-05 (FluBBa)
 	Added new debug menu.
 	Better menu traversing.
 

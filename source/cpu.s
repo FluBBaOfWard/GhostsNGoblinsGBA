@@ -172,8 +172,8 @@ cpuReset:		;@ Called by loadCart/resetGame
 	bl m6809Reset
 
 	mov r0,m6809ptr
-	adr r2,braHack
 	mov r1,#0x20
+	adr r2,braHack
 	bl m6809PatchOpcode
 
 	ldmfd sp!,{lr}

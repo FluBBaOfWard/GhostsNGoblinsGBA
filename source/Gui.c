@@ -12,7 +12,7 @@
 #include "ARM6809/Version.h"
 #include "GnGVideo/Version.h"
 
-#define EMUVERSION "V0.2.0 2023-06-27"
+#define EMUVERSION "V0.2.0 2023-11-05"
 
 static void uiDebug(void);
 
