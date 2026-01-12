@@ -89,6 +89,8 @@ MAME team for info on hardware.
 
 Fredrik Ahlström
 
-Twitter @TheRealFluBBa
+<https://bsky.app/profile/therealflubba.bsky.social>
 
-http://www.github.com/FluBBaOfWard
+<https://www.github.com/FluBBaOfWard>
+
+X/Twitter @TheRealFluBBa

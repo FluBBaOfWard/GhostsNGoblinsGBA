@@ -96,7 +96,7 @@ ROM_Space:
 // PLDs
 	.incbin "gng/gg-pal10l8.bin"
 
-	.section .ewram,"ax"
+	.section .ewram, "ax", %progbits
 	.align 2
 ;@----------------------------------------------------------------------------
 machineInit: 	;@ Called from C
@@ -271,7 +271,12 @@ vromBase2:
 promsBase:
 	.long 0
 
-	.section .sbss
+#ifdef GBA
+	.section .sbss				;@ This is EWRAM on GBA with devkitARM
+#else
+	.section .bss
+#endif
+	.align 2
 WRMEMTBL_:
 	.space 256*4
 RDMEMTBL_:

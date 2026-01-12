@@ -20,7 +20,7 @@
 	.syntax unified
 	.arm
 
-	.section .ewram,"ax"
+	.section .ewram, "ax", %progbits
 	.align 2
 
 ;@----------------------------------------------------------------------------
@@ -169,7 +169,7 @@ soundMode:
 	.byte 0
 	.space 3
 
-	.section .sbss
+	.section .sbss				;@ This is EWRAM on GBA with devkitARM
 //SN76496_0:
 //	.space snSize
 FREQTBL:

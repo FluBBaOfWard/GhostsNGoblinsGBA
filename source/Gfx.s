@@ -63,7 +63,7 @@ gfxReset:					;@ Called with CPU reset
 	bl memclr_					;@ Clear GFX regs
 
 	ldr gngptr,=gngVideo_0
-	ldr r0,=m6809SetIRQPin		;@ Frame irq
+	ldr r0,=m6809SetIRQPinCurrentCpu		;@ Frame irq
 	mov r1,#0
 	ldr r2,=EMU_RAM
 	bl gngVideoReset
@@ -335,8 +335,12 @@ gngVideo_0W:				;@ I/O write, 0x2000-0x3FFFF
 gngVideo_0:
 	.space gngVideoSize
 ;@----------------------------------------------------------------------------
-	.section .ewram, "ax"
-
+#ifdef GBA
+	.section .sbss				;@ This is EWRAM on GBA with devkitARM
+#else
+	.section .bss
+#endif
+	.align 2
 gfxState:
 adjustBlend:
 	.long 0
@@ -347,7 +351,6 @@ windowTop:
 	.byte 0
 	.byte 0,0
 
-	.section .sbss
 scrollTemp:
 	.space 0x400*2
 OAM_BUFFER1:

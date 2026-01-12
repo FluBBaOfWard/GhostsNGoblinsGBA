@@ -9,38 +9,137 @@
 #include "Gfx.h"
 #include "io.h"
 #include "cpu.h"
+#include "GhostsNGoblins.h"
 #include "ARM6809/Version.h"
 #include "GnGVideo/Version.h"
 
-#define EMUVERSION "V0.2.0 2023-11-05"
+#define EMUVERSION "V0.2.0 2026-01-12"
 
-static void uiDebug(void);
+static void scalingSet(void);
+static const char *getScalingText(void);
+static void controllerSet(void);
+static const char *getControllerText(void);
+static void swapABSet(void);
+static const char *getSwapABText(void);
+static void fgrLayerSet(void);
+static const char *getFgrLayerText(void);
+static void bgrLayerSet(void);
+static const char *getBgrLayerText(void);
+static void sprLayerSet(void);
+static const char *getSprLayerText(void);
+static void coinageSet(void);
+static const char *getCoinageText(void);
+static void coinAffectSet(void);
+static const char *getCoinAffectText(void);
+static void difficultSet(void);
+static const char *getDifficultText(void);
+static void livesSet(void);
+static const char *getLivesText(void);
+static void bonusSet(void);
+static const char *getBonusText(void);
+static void cabinetSet(void);
+static const char *getCabinetText(void);
+static void demoSet(void);
+static const char *getDemoText(void);
+static void flipSet(void);
+static const char *getFlipText(void);
+static void cheatSet(void);
+static const char *getCheatText(void);
+static void gammaChange(void);
 
-const fptr fnMain[] = {nullUI, subUI, subUI, subUI, subUI, subUI, subUI, subUI, subUI, subUI};
+const MItem dummyItems[] = {
+	{"", uiDummy},
+};
+const MItem mainItems[] = {
+	{"File->", ui2},
+	{"Controller->", ui3},
+	{"Display->", ui4},
+	{"DipSwitches->", ui5},
+	{"Settings->", ui6},
+	{"Debug->", ui7},
+	{"About->", ui8},
+	{"Sleep", gbaSleep},
+	{"Restart", resetGame},
+	{"Quit Emulator", ui10},
+};
+const MItem fileItems[] = {
+	{"Load Game->", ui9},
+	{"Load State", loadState},
+	{"Save State", saveState},
+	{"Save Settings", saveSettings},
+	{"Reset Game", resetGame},
+};
+const MItem ctrlItems[] = {
+	{"B Autofire: ", autoBSet, getAutoBText},
+	{"A Autofire: ", autoASet, getAutoAText},
+	{"Controller: ", controllerSet, getControllerText},
+	{"Swap A-B:   ", swapABSet, getSwapABText},
+};
+const MItem displayItems[] = {
+	{"Display: ", scalingSet, getScalingText},
+	{"Scaling: ", flickSet, getFlickText},
+	{"Gamma: ", gammaChange, getGammaText},
+};
+const MItem dipItems[] = {
+	{"Coinage: ", coinageSet, getCoinageText},
+	{"Coinage Affects: ", coinAffectSet, getCoinAffectText},
+	{"Difficulty: ", difficultSet, getDifficultText},
+	{"Lives: ", livesSet, getLivesText},
+	{"Bonus: ", bonusSet, getBonusText},
+	{"Cabinet: ", cabinetSet, getCabinetText},
+	{"Demo Sound: ", demoSet, getDemoText},
+	{"Flip Screen: ", flipSet, getFlipText},
+	{"Invulnerable: ", cheatSet, getCheatText},
+};
+const MItem setItems[] = {
+	{"Speed: ", speedSet, getSpeedText},
+	{"Autoload State: ", autoStateSet, getAutoStateText},
+	{"Autosave Settings: ", autoSettingsSet, getAutoSettingsText},
+	{"Autopause Game: ", autoPauseGameSet, getAutoPauseGameText},
+	{"EWRAM Overclock: ", ewramSet, getEWRAMText},
+	{"Autosleep: ", sleepSet, getSleepText},
+};
+const MItem debugItems[] = {
+	{"Debug Output: ", debugTextSet, getDebugText},
+	{"Disable Foreground: ", fgrLayerSet, getFgrLayerText},
+	{"Disable Background: ", bgrLayerSet, getBgrLayerText},
+	{"Disable Sprites: ", sprLayerSet, getSprLayerText},
+	{"Step Frame", stepFrame},
+};
+const MItem fnList9[GAME_COUNT] = {
+	{"Ghosts'n Goblins (World? set 1)", quickSelectGame},
+	{"Ghosts'n Goblins (World? set 2)", quickSelectGame},
+	{"Ghosts'n Goblins (bootleg with Cross)", quickSelectGame},
+	{"Ghosts'n Goblins (prototype)", quickSelectGame},
+	{"Ghosts'n Goblins (Italian bootleg, harder)", quickSelectGame},
+	{"Ghosts'n Goblins (World? set 3)", quickSelectGame},
+	{"Ghosts'n Goblins (US)", quickSelectGame},
+	{"Makai-Mura (Japan)", quickSelectGame},
+	{"Makai-Mura (Japan Revision C)", quickSelectGame},
+	{"Makai-Mura (Japan Revision G)", quickSelectGame},
+	{"Diamond Run", quickSelectGame},
+};
+const MItem quitItems[] = {
+	{"Yes", exitEmulator},
+	{"No", backOutOfMenu},
+};
 
-const fptr fnList0[] = {uiDummy};
-const fptr fnList1[] = {ui2, ui3, ui4, ui5, ui6, ui7, ui8, gbaSleep, resetGame};
-const fptr fnList2[] = {ui9, loadState, saveState, saveSettings, resetGame};
-const fptr fnList3[] = {autoBSet, autoASet, controllerSet, swapABSet};
-const fptr fnList4[] = {scalingSet, flickSet, gammaSet, fgrLayerSet, bgrLayerSet, sprLayerSet};
-const fptr fnList5[] = {speedSet, autoStateSet, autoSettingsSet, autoPauseGameSet, ewramSet, sleepSet};
-const fptr fnList6[] = {debugTextSet, fgrLayerSet, bgrLayerSet, sprLayerSet, stepFrame};
-const fptr fnList7[] = {coinageSet, coinAffectSet, difficultSet, livesSet, bonusSet, cabinetSet, demoSet, flipSet, cheatSet};
-const fptr fnList8[] = {uiDummy};
-const fptr fnList9[] = {quickSelectGame, quickSelectGame, quickSelectGame, quickSelectGame, quickSelectGame, quickSelectGame, quickSelectGame, quickSelectGame, quickSelectGame, quickSelectGame};
-const fptr *const fnListX[] = {fnList0, fnList1, fnList2, fnList3, fnList4, fnList5, fnList6, fnList7, fnList8, fnList9};
-const u8 menuXItems[] = {ARRSIZE(fnList0), ARRSIZE(fnList1), ARRSIZE(fnList2), ARRSIZE(fnList3), ARRSIZE(fnList4), ARRSIZE(fnList5), ARRSIZE(fnList6), ARRSIZE(fnList7), ARRSIZE(fnList8), ARRSIZE(fnList9)};
-const fptr drawUIX[] = {uiNullNormal, uiMainMenu, uiFile, uiController, uiDisplay, uiSettings, uiDebug, uiDipswitches, uiAbout, uiLoadGame};
+const Menu menu0 = MENU_M("", uiNullNormal, dummyItems);
+Menu menu1 = MENU_M("Main Menu", uiAuto, mainItems);
+const Menu menu2 = MENU_M("File Handling", uiAuto, fileItems);
+const Menu menu3 = MENU_M("Controller Settings", uiAuto, ctrlItems);
+const Menu menu4 = MENU_M("Display Settings", uiAuto, displayItems);
+const Menu menu5 = MENU_M("Dipswitch Settings", uiDipswitches, dipItems);
+const Menu menu6 = MENU_M("Other Settings", uiAuto, setItems);
+const Menu menu7 = MENU_M("Debug", uiAuto, debugItems);
+const Menu menu8 = MENU_M("About", uiAbout, dummyItems);
+const Menu menu9 = MENU_M("Load game", uiAuto, fnList9);
+const Menu menu10 = MENU_M("Quit Emulator?", uiAuto, quitItems);
 
-u8 gGammaValue;
+const Menu *const menus[] = {&menu0, &menu1, &menu2, &menu3, &menu4, &menu5, &menu6, &menu7, &menu8, &menu9, &menu10 };
 
-char *const autoTxt[]   = {"Off", "On", "With R"};
-char *const speedTxt[]  = {"Normal", "200%", "Max", "50%"};
-char *const sleepTxt[]  = {"5min", "10min", "30min", "Off"};
-char *const brighTxt[]  = {"I", "II", "III", "IIII", "IIIII"};
 char *const ctrlTxt[]   = {"1P", "2P"};
 char *const dispTxt[]   = {"Unscaled", "Scaled"};
-char *const flickTxt[]  = {"No Flicker", "Flicker"};
 
 char *const coinTxt[]	= {
 	"1 Coin - 1 Credit",  "1 Coin - 2 Credits", "1 Coin - 3 Credits", "1 Coin - 4 Credits",
@@ -60,6 +159,7 @@ char *const singleTxt[]	= {"Single", "Dual"};
 void setupGUI() {
 	emuSettings = AUTOPAUSE_EMULATION;
 //	keysSetRepeat(25, 4);	// Delay, repeat.
+	menu1.itemCount = ARRSIZE(mainItems) - (enableExit?0:1);
 	closeMenu();
 }
 
@@ -109,7 +209,7 @@ void uiMainMenu() {
 }
 
 void uiAbout() {
-	setupSubMenu("Help");
+	setupSubMenuText();
 	drawText("Select: Insert coin",3);
 	drawText("Start:  Start button",4);
 	drawText("DPad:   Move character",5);
@@ -121,52 +221,9 @@ void uiAbout() {
 	drawText("GnGVid      " GNGVERSION, 19);
 }
 
-void uiController() {
-	setupSubMenu("Controller Settings");
-	drawSubItem("B Autofire: ", autoTxt[autoB]);
-	drawSubItem("A Autofire: ", autoTxt[autoA]);
-	drawSubItem("Controller: ", ctrlTxt[(joyCfg>>29)&1]);
-	drawSubItem("Swap A-B:   ", autoTxt[(joyCfg>>10)&1]);
-}
-
-void uiDisplay() {
-	setupSubMenu("Display Settings");
-	drawSubItem("Display: ", dispTxt[gScaling]);
-	drawSubItem("Scaling: ", flickTxt[gFlicker]);
-	drawSubItem("Gamma: ", brighTxt[gGammaValue]);
-}
-
-void uiSettings() {
-	setupSubMenu("Other Settings");
-	drawSubItem("Speed: ", speedTxt[(emuSettings>>6)&3]);
-	drawSubItem("Autoload State: ", autoTxt[(emuSettings>>2)&1]);
-	drawSubItem("Autosave Settings: ", autoTxt[(emuSettings>>9)&1]);
-	drawSubItem("Autopause Game: ", autoTxt[emuSettings&1]);
-	drawSubItem("EWRAM Overclock: ", autoTxt[ewram&1]);
-	drawSubItem("Autosleep: ", sleepTxt[(emuSettings>>4)&3]);
-}
-
-void uiDebug() {
-	setupSubMenu("Debug");
-	drawSubItem("Debug Output:", autoTxt[gDebugSet&1]);
-	drawSubItem("Disable Foreground:", autoTxt[gGfxMask&1]);
-	drawSubItem("Disable Background:", autoTxt[(gGfxMask>>1)&1]);
-	drawSubItem("Disable Sprites:", autoTxt[(gGfxMask>>4)&1]);
-	drawSubItem("Step Frame", NULL);
-}
-
 void uiDipswitches() {
 	char s[10];
-	setupSubMenu("Dipswitch Settings");
-	drawSubItem("Coinage: ", coinTxt[g_dipSwitch1 & 0xf]);
-	drawSubItem("Coinage affects: ", coinAffectTxt[(g_dipSwitch1>>4) & 0x1]);
-	drawSubItem("Difficulty: ", diffTxt[(g_dipSwitch2>>5) & 3]);
-	drawSubItem("Lives: ", livesTxt[g_dipSwitch2 & 3]);
-	drawSubItem("Bonus: ", bonusTxt[(g_dipSwitch2>>3) & 3]);
-	drawSubItem("Cabinet: ", cabTxt[(g_dipSwitch2>>2) & 1]);
-	drawSubItem("Demo Sound: ", autoTxt[(g_dipSwitch1>>5) & 1]);
-	drawSubItem("Flip Screen: ", autoTxt[(g_dipSwitch1>>7) & 1]);
-	drawSubItem("Invulnerable: ", autoTxt[(g_dipSwitch2>>7) & 1]);
+	uiAuto();
 
 	setMenuItemRow(15);
 	int2Str(coinCounter0, s);
@@ -206,10 +263,16 @@ void resetGame() {
 void controllerSet() {				// See io.s: refreshEMUjoypads
 	joyCfg ^= 0x20000000;
 }
+const char *getControllerText() {
+	return ctrlTxt[(joyCfg>>29)&1];
+}
 
 /// Swap A & B buttons
 void swapABSet() {
 	joyCfg ^= 0x400;
+}
+const char *getSwapABText() {
+	return autoTxt[(joyCfg>>10)&1];
 }
 
 /// Turn on/off scaling
@@ -217,11 +280,13 @@ void scalingSet(){
 	gScaling ^= 0x01;
 	refreshGfx();
 }
+const char *getScalingText() {
+	return dispTxt[gScaling];
+}
 
 /// Change gamma (brightness)
-void gammaSet() {
-	gGammaValue++;
-	if (gGammaValue > 4) gGammaValue=0;
+void gammaChange() {
+	gammaSet();
 	paletteInit(gGammaValue);
 	paletteTxAll();					// Make new palette visible
 	setupMenuPalette();
@@ -231,63 +296,88 @@ void gammaSet() {
 void fgrLayerSet(){
 	gGfxMask ^= 0x01;
 }
+const char *getFgrLayerText() {
+	return autoTxt[gGfxMask&1];
+}
 /// Turn on/off rendering of background
 void bgrLayerSet(){
 	gGfxMask ^= 0x02;
+}
+const char *getBgrLayerText() {
+	return autoTxt[(gGfxMask>>1)&1];
 }
 /// Turn on/off rendering of sprites
 void sprLayerSet(){
 	gGfxMask ^= 0x10;
 }
-
+const char *getSprLayerText() {
+	return autoTxt[(gGfxMask>>4)&1];
+}
 
 /// Number of coins for credits
 void coinageSet() {
-	int i = (g_dipSwitch1+1) & 0xf;
-	g_dipSwitch1 = (g_dipSwitch1 & ~0xf) | i;
+	int i = (gDipSwitch1+1) & 0xf;
+	gDipSwitch1 = (gDipSwitch1 & ~0xf) | i;
+}
+const char *getCoinageText() {
+	return coinTxt[gDipSwitch1 & 0xf];
 }
 /// Which coin slot that is affected by change
 void coinAffectSet() {
-	g_dipSwitch1 ^= 0x10;
+	gDipSwitch1 ^= 0x10;
 }
-/// Number of coins for credits
-void coinASet() {
-	int i = (g_dipSwitch1+1) & 0x3;
-	g_dipSwitch1 = (g_dipSwitch1 & ~0x3) | i;
-}
-/// Number of coins for credits
-void coinBSet() {
-	int i = (g_dipSwitch1+4) & 0xC;
-	g_dipSwitch1 = (g_dipSwitch1 & ~0xC) | i;
+const char *getCoinAffectText() {
+	return coinAffectTxt[(gDipSwitch1>>4) & 0x1];
 }
 /// Game difficulty
 void difficultSet() {
-	int i = (g_dipSwitch2+0x20) & 0x60;
-	g_dipSwitch2 = (g_dipSwitch2 & ~0x60) | i;
+	int i = (gDipSwitch2+0x20) & 0x60;
+	gDipSwitch2 = (gDipSwitch2 & ~0x60) | i;
+}
+const char *getDifficultText() {
+	return diffTxt[(gDipSwitch2>>5) & 3];
 }
 /// Number of lifes to start with
 void livesSet() {
-	int i = (g_dipSwitch2+0x01) & 0x03;
-	g_dipSwitch2 = (g_dipSwitch2 & ~0x03) | i;
+	int i = (gDipSwitch2+0x01) & 0x03;
+	gDipSwitch2 = (gDipSwitch2 & ~0x03) | i;
+}
+const char *getLivesText() {
+	return livesTxt[gDipSwitch2 & 3];
 }
 /// At which score you get bonus lifes
 void bonusSet() {
-	int i = (g_dipSwitch2+0x08) & 0x18;
-	g_dipSwitch2 = (g_dipSwitch2 & ~0x18) | i;
+	int i = (gDipSwitch2+0x08) & 0x18;
+	gDipSwitch2 = (gDipSwitch2 & ~0x18) | i;
+}
+const char *getBonusText() {
+	return bonusTxt[(gDipSwitch2>>3) & 3];
 }
 /// Cocktail/upright
 void cabinetSet() {
-	g_dipSwitch2 ^= 0x04;
+	gDipSwitch2 ^= 0x04;
+}
+const char *getCabinetText() {
+	return cabTxt[(gDipSwitch2>>2) & 1];
 }
 /// Demo sound on/off
 void demoSet() {
-	g_dipSwitch1 ^= 0x20;
+	gDipSwitch1 ^= 0x20;
+}
+const char *getDemoText() {
+	return autoTxt[(gDipSwitch1>>5) & 1];
 }
 /// Flip screen
 void flipSet() {
-	g_dipSwitch1 ^= 0x80;
+	gDipSwitch1 ^= 0x80;
 }
-/// Invincible mode in Makai-mura
+const char *getFlipText() {
+	return autoTxt[(gDipSwitch1>>7) & 1];
+}
+/// No Collision detection in Makai-mura
 void cheatSet() {
-	g_dipSwitch2 ^= 0x80;
+	gDipSwitch2 ^= 0x80;
+}
+const char *getCheatText() {
+	return autoTxt[(gDipSwitch2>>7) & 1];
 }
