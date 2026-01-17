@@ -169,7 +169,12 @@ soundMode:
 	.byte 0
 	.space 3
 
+#ifdef GBA
 	.section .sbss				;@ This is EWRAM on GBA with devkitARM
+#else
+	.section .bss
+	.align 2
+#endif
 //SN76496_0:
 //	.space snSize
 FREQTBL:

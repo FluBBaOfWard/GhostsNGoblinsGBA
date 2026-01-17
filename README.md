@@ -25,7 +25,8 @@ the cross to navigate the menus, A to select an option, B to go back a step.
 
 ### Controller
 
-* Autofire: Select if you want autofire.
+* B Autofire: Select if you want autofire on button B.
+* A Autofire: Select if you want autofire on button A.
 * Controller: 2P start a 2 player game.
 * Swap A/B: Swap which GBA button is mapped to which arcade button.
 
@@ -35,17 +36,10 @@ the cross to navigate the menus, A to select an option, B to go back a step.
  Unscaled mode:  L & R buttons scroll the screen up and down.
 * Scaling: Here you can select if you want flicker or barebones lineskip.
 * Gamma: Lets you change the gamma ("brightness").
-* Disable Foreground: Turn on/off foreground rendering.
-* Disable Background: Turn on/off background rendering.
-* Disable Sprites: Turn on/off sprite rendering.
 
-### Debug
+### Dipswitches
 
-* Debug Output: Show an FPS meter for now.
-* Disable Foreground: Turn on/off foreground rendering.
-* Disable Background: Turn on/off background rendering.
-* Disable Sprites: Turn on/off sprite rendering.
-* Step Frame: Emulate a single frame.
+* Lot of settings for the actual arcade game, difficulty/lives etc.
 
 ### Settings
 
@@ -58,13 +52,20 @@ the cross to navigate the menus, A to select an option, B to go back a step.
  savestate associated with the selected game.
 * Autosave Settings: Saves changed settings every time you leave menu.
 * Autopause Game: Toggle if the game should pause when opening the menu.
+* Overclock EWRAM: Changes the waitstates on EWRAM between 2 and 1, might
+ damage your GBA and uses more power, around 10% speedgain. Doesn't work on
+ Gameboy Micro. Use at your own risk!
 * Autosleep: Change the autosleep time, also see Sleep.
 
-### Dipswitches
+### Debug
 
-* Lot of settings for the actual arcade game, difficulty/lives etc.
+* Debug Output: Show an FPS meter for now.
+* Disable Foreground: Turn on/off foreground rendering.
+* Disable Background: Turn on/off background rendering.
+* Disable Sprites: Turn on/off sprite rendering.
+* Step Frame: Emulate a single frame.
 
-### Help
+### About
 
 * Some dumb info about the game and emulator...
 

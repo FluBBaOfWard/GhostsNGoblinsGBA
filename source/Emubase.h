@@ -1,6 +1,12 @@
 #ifndef EMUBASE
 #define EMUBASE
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#define GNGID 0x1A474E47		// "GNG",0x1A - Ghosts'n Goblins
+
 typedef struct {
 	const u32 identifier;
 	const u32 filesize;
@@ -24,6 +30,10 @@ typedef struct {				//(config struct)
 	u8 gammaValue;				//from gfx.s
 	u8 controller;				//from io.s
 	char currentPath[256];
-} configdata;
+} ConfigData;
+
+#ifdef __cplusplus
+} // extern "C"
+#endif
 
 #endif // EMUBASE

@@ -157,7 +157,6 @@ char *const singleTxt[]	= {"Single", "Dual"};
 
 /// This is called at the start of the emulator
 void setupGUI() {
-	emuSettings = AUTOPAUSE_EMULATION;
 //	keysSetRepeat(25, 4);	// Delay, repeat.
 	menu1.itemCount = ARRSIZE(mainItems) - (enableExit?0:1);
 	closeMenu();
